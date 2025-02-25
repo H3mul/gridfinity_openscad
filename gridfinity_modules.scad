@@ -195,10 +195,14 @@ module gridcopycorners(num_x, num_y, r, onlyBoxCorners = false) {
 
 // similar to quadtranslate but expands to extremities of a block
 module cornercopy(r, num_x=1, num_y=1) {
-  for (xx=[-r, gridfinity_pitch*(num_x-1)+r]) for (yy=[-r, gridfinity_pitch*(num_y-1)+r]) 
-    translate([xx, yy, 0]) children();
+  cornercopypadded(r,r,r,r, num_x, num_y) children();
 }
 
+module cornercopypadded(lpos, rpos, tpos, bpos, num_x=1, num_y=1) {
+  for (xx=[-lpos, gridfinity_pitch*(num_x-1)+rpos]) for (yy=[-bpos, gridfinity_pitch*(num_y-1)+tpos]) {
+    translate([xx, yy, 0]) children();
+  }
+}
 
 // make repeated copies of something(s) at the gridfinity spacing of 42mm
 module gridcopy(num_x, num_y) {

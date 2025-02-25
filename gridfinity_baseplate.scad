@@ -1,8 +1,20 @@
 // include instead of use, so we get the pitch
 include <gridfinity_modules.scad>
 
-xsize = 5;
-ysize = 3;
+// X tiles (u)
+xsize = 5.0; // .1
+// Y tiles (u)
+ysize = 3.0; // .1
+
+// Left Padding (mm)
+lpadding = 0; // .1
+// Right Padding (mm)
+rpadding = 0; // .1
+// Top Padding (mm)
+tpadding = 0; // .1
+// Bottom Padding (mm)
+bpadding = 0; // .1
+
 weighted = false;
 lid = false;
 
@@ -70,10 +82,24 @@ module frame_plain(num_x, num_y, extra_down=0, trim=0) {
   ht = extra_down > 0 ? 4.4 : 5;
   corner_radius = 3.75;
   corner_position = gridfinity_pitch/2-corner_radius-trim;
+
+  whole_num_x = floor(num_x);
+  frac_num_x = num_x % 1;
+  x_frac = frac_num_x != 0;
+
+  whole_num_y = floor(num_y);
+  frac_num_y = num_y % 1;
+  y_frac = frac_num_y != 0;
+
   difference() {
-    hull() cornercopy(corner_position, num_x, num_y) 
+    hull() cornercopypadded(corner_position + lpadding, corner_position + rpadding, corner_position + tpadding, corner_position + bpadding, num_x, num_y) 
     translate([0, 0, -extra_down]) cylinder(r=corner_radius, h=ht+extra_down, $fn=44);
-    translate([0, 0, trim ? 0 : -0.01]) 
-    render() gridcopy(num_x, num_y) pad_oversize(margins=1);
+    translate([0, 0, trim ? 0 : -0.01])
+    union() {
+      render() gridcopy(num_x, num_y) pad_oversize(margins=1);
+      if (x_frac) render() translate([whole_num_x * gridfinity_pitch, 0, 0]) gridcopy(1, whole_num_y) pad_oversize(margins=1, frac_num_x, 1);
+      if (y_frac) render() translate([0, whole_num_y * gridfinity_pitch, 0]) gridcopy(whole_num_x, 1) pad_oversize(margins=1, 1, frac_num_y);
+      if (x_frac && y_frac) render() translate([whole_num_x * gridfinity_pitch, whole_num_y * gridfinity_pitch, 0]) pad_oversize(margins=1, frac_num_x, frac_num_y);
+    }
   }
 }
